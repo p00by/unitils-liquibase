@@ -4,6 +4,10 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -55,6 +59,18 @@ public class LiquibaseTestListenerTest {
 		inOrder.verify(liquibaseRunner).update("script");
 	}
 	
+	@Test
+	public void testSuperAnnotation() throws Exception {
+		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("superAnnotation"));
+		
+		verify(liquibaseRunner).update("script");
+	}
+	
+	@Test(expected = RuntimeException.class)
+	public void testDoubleAnnotationThrows() throws Exception {
+		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("doubleAnnotation"));
+	}
+	
 	//Since you can't mock Methods using annotations, i make the methods here
 	public class MethodClass {
 		
@@ -68,6 +84,20 @@ public class LiquibaseTestListenerTest {
 		
 		@LiquibaseScript(values = {"script"}, dropBeforeScript = true)
 		public void dropAndScript() {}
+		
+		@SuperLiquibaseScript
+		public void superAnnotation() {}
+		
+		@LiquibaseScript(values = {"script"}, dropBeforeScript = true)
+		@SuperLiquibaseScript
+		public void doubleAnnotation() {}
+		
+	}
+	
+	@LiquibaseScript(values = {"script"})
+	@Retention(RetentionPolicy.RUNTIME)
+	@Inherited
+	public @interface SuperLiquibaseScript {
 		
 	}
 	
