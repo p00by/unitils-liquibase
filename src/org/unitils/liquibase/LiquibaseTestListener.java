@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.junit.Before;
 import org.unitils.core.TestListener;
 import org.unitils.liquibase.annotation.LiquibaseScript;
 
@@ -20,7 +21,29 @@ public class LiquibaseTestListener extends TestListener {
 	}
 	
 	@Override
+	public void beforeTestSetUp(Object testObject, Method testMethod) {
+		Class<?> testObjectClass = testObject.getClass();
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+		while (!testObjectClass.equals(Object.class)) {
+			classes.add(testObjectClass);
+			testObjectClass = testObjectClass.getSuperclass();
+		}
+		for (int i = classes.size() - 1; i >= 0; i--) {
+			testObjectClass = classes.get(i);
+			for (Method beforeMethod: testObjectClass.getDeclaredMethods()) {
+				if (beforeMethod.getAnnotation(Before.class) != null) {
+					runLiquibase(testObject, beforeMethod);
+				}
+			}
+		}
+	}
+	
+	@Override
 	public void beforeTestMethod(Object testObject, Method testMethod) {
+		runLiquibase(testObject, testMethod);
+	}
+	
+	private void runLiquibase(Object testObject, Method testMethod) {
 		try {
 			LiquibaseScript annotation = getAnnotation(testMethod);
 			

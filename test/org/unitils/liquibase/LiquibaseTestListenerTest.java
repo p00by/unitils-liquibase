@@ -8,6 +8,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -24,19 +25,16 @@ public class LiquibaseTestListenerTest {
 	@InjectMocks
 	private LiquibaseTestListener liquibaseTestListener;
 	
-	@Mock
-	private Object testObject;
-	
 	@Test
 	public void testOnNoAnnotation() throws Exception {
-		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("noAnnotations"));
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("noAnnotations"));
 		
 		verifyZeroInteractions(liquibaseRunner);
 	}
 	
 	@Test
 	public void testDropBeforeScript() throws Exception {
-		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("dropBeforeScript"));
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("dropBeforeScript"));
 		
 		verify(liquibaseRunner).dropAll();
 	}
@@ -44,14 +42,14 @@ public class LiquibaseTestListenerTest {
 
 	@Test
 	public void testExecuteScript() throws Exception {
-		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("executeScript"));
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("executeScript"));
 		
 		verify(liquibaseRunner).update("script");
 	}
 	
 	@Test
 	public void testFirstDropThenScript() throws Exception {
-		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("dropAndScript"));
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("dropAndScript"));
 		
 		InOrder inOrder = inOrder(liquibaseRunner);
 
@@ -61,18 +59,39 @@ public class LiquibaseTestListenerTest {
 	
 	@Test
 	public void testSuperAnnotation() throws Exception {
-		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("superAnnotation"));
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("superAnnotation"));
 		
 		verify(liquibaseRunner).update("script");
 	}
 	
 	@Test(expected = RuntimeException.class)
 	public void testDoubleAnnotationThrows() throws Exception {
-		liquibaseTestListener.beforeTestMethod(testObject, MethodClass.class.getMethod("doubleAnnotation"));
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("doubleAnnotation"));
+	}
+	
+	@Test
+	public void testAnnotationsOnBefore() throws Exception {
+		liquibaseTestListener.beforeTestSetUp(new MethodClass(), MethodClass.class.getMethod("doubleAnnotation"));
+		
+		verify(liquibaseRunner).update("before");
+	}
+	
+	@Test
+	public void testAnnotationsOnBeforeSuperClass() throws Exception {
+		liquibaseTestListener.beforeTestSetUp(new MethodClassExtension(), MethodClass.class.getMethod("doubleAnnotation"));
+		
+		InOrder inOrder = inOrder(liquibaseRunner);
+
+		inOrder.verify(liquibaseRunner).update("before");
+		inOrder.verify(liquibaseRunner).update("before2");
 	}
 	
 	//Since you can't mock Methods using annotations, i make the methods here
 	public class MethodClass {
+		
+		@Before
+		@LiquibaseScript(values = {"before"})
+		public void before() {}
 		
 		public void noAnnotations() {}
 		
@@ -92,6 +111,12 @@ public class LiquibaseTestListenerTest {
 		@SuperLiquibaseScript
 		public void doubleAnnotation() {}
 		
+	}
+	
+	public class MethodClassExtension extends MethodClass{
+		@Before
+		@LiquibaseScript(values = {"before2"})
+		public void before2() {}
 	}
 	
 	@LiquibaseScript(values = {"script"})
