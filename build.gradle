@@ -1,16 +1,31 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src'] 
+		}
+	}
+	test {
+		java {
+			srcDirs = ['test']
+		}
+	}
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile group: 'org.unitils', name: 'unitils-dbunit', version:'3+'
-    compile group: 'org.liquibase', name: 'liquibase-core', version: '2.0.5'  
+	compile group: 'org.unitils', name: 'unitils-dbunit', version:'3+'
+	compile group: 'org.liquibase', name: 'liquibase-core', version: '2.0.5'  
 	
 	compile group: 'com.mattbertolini', name: 'liquibase-slf4j', version: '1.0.0'
 	compile group: 'log4j', name: 'log4j', version: '1.2+'
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6+'
 	compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6+'
+	
+	testCompile  group: 'org.mockito', name: 'mockito-all', version: '1.9+'
 }
