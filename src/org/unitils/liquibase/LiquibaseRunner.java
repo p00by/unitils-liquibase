@@ -16,15 +16,14 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 public class LiquibaseRunner {
 
 	private final DataSource dataSource;
-	private final ResourceAccessor resourceAccessor;
+	private final String basePath;
 	
 	public LiquibaseRunner(String driver, String url, String username, String password, String basePath) {
 		dataSource = new DriverManagerDataSource(driver, url, username, password);
-		resourceAccessor = new FileSystemResourceAccessor(basePath);
+		this.basePath = basePath;
 	}
 	
 	public void update(String changeLog) throws Exception {
-		
 		runInLiquibase(changeLog, new LiquibaseFunction() {
 			@Override
 			public void run(Liquibase liquibase) throws LiquibaseException {
@@ -33,21 +32,34 @@ public class LiquibaseRunner {
     	});
 	}
 	
+	public void update(String changeLog, String basePath) throws Exception {
+		runInLiquibase(changeLog, new LiquibaseFunction() {
+			@Override
+			public void run(Liquibase liquibase) throws LiquibaseException {
+				liquibase.update("");
+			}
+    	}, basePath);
+	}
+	
 	public void dropAll() throws Exception {
 		runInLiquibase("", new LiquibaseFunction() {
 			@Override
 			public void run(Liquibase liquibase) throws LiquibaseException {
 				liquibase.dropAll();
-				
 			}
     	});
 	}
 	
 	private void runInLiquibase(String value, LiquibaseFunction function) throws Exception {
+		runInLiquibase(value, function, basePath);
+	}
+	
+	private void runInLiquibase(String value, LiquibaseFunction function, String basePath) throws Exception {
 		Connection connection = null;
 		try { 
 			connection = dataSource.getConnection();
 			DatabaseConnection databaseConnection = new JdbcConnection(connection);
+			ResourceAccessor resourceAccessor = new FileSystemResourceAccessor(basePath);
 			
 			Liquibase liquibase = new Liquibase(value, resourceAccessor, databaseConnection);
 			function.run(liquibase);

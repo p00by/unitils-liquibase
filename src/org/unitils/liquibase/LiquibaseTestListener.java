@@ -67,7 +67,11 @@ public class LiquibaseTestListener extends TestListener {
 	    	}
 	        for (String value: annotation.values()) {
 	        	LOGGER.debug("Running liquibase script" + value);
-	        	liquibaseRunner.update(value);
+	        	if ("".equals(annotation.basePath())) {
+	        		liquibaseRunner.update(value);
+	        	} else {
+	        		liquibaseRunner.update(value, annotation.basePath());
+	        	}
 	        }
 		} catch (Exception ex) {
 			LOGGER.error("Could not run liquibase command", ex);

@@ -48,6 +48,13 @@ public class LiquibaseTestListenerTest {
 	}
 	
 	@Test
+	public void testDifferentBasePath() throws Exception {
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("differentBasePath"));
+		
+		verify(liquibaseRunner).update("script", "different");
+	}
+	
+	@Test
 	public void testFirstDropThenScript() throws Exception {
 		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("dropAndScript"));
 		
@@ -125,6 +132,9 @@ public class LiquibaseTestListenerTest {
 		@LiquibaseScript(values = {"script"}, dropBeforeScript = true)
 		@SuperLiquibaseScript
 		public void doubleAnnotation() {}
+		
+		@LiquibaseScript(values = {"script"}, basePath="different")
+		public void differentBasePath() {}
 		
 	}
 	
