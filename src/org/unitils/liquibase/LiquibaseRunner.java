@@ -24,6 +24,7 @@ public class LiquibaseRunner {
 	}
 	
 	public void update(String changeLog) throws Exception {
+		
 		runInLiquibase(changeLog, new LiquibaseFunction() {
 			@Override
 			public void run(Liquibase liquibase) throws LiquibaseException {
@@ -37,6 +38,7 @@ public class LiquibaseRunner {
 			@Override
 			public void run(Liquibase liquibase) throws LiquibaseException {
 				liquibase.dropAll();
+				
 			}
     	});
 	}

@@ -86,7 +86,22 @@ public class LiquibaseTestListenerTest {
 		inOrder.verify(liquibaseRunner).update("before2");
 	}
 	
+	@Test
+	public void testBeforeClassWithSimpleAnnotation() throws Exception {
+		liquibaseTestListener.beforeTestClass(MethodClass.class);
+		
+		verify(liquibaseRunner).update("beforeClass");
+	}
+	
+	@Test
+	public void testBeforeClassWithMetaAnnotation() throws Exception {
+		liquibaseTestListener.beforeTestClass(MetaBeforeClass.class);
+		
+		verify(liquibaseRunner).update("script");
+	}
+	
 	//Since you can't mock Methods using annotations, i make the methods here
+	@LiquibaseScript(values = {"beforeClass"})
 	public class MethodClass {
 		
 		@Before
@@ -117,6 +132,11 @@ public class LiquibaseTestListenerTest {
 		@Before
 		@LiquibaseScript(values = {"before2"})
 		public void before2() {}
+	}
+	
+	@SuperLiquibaseScript
+	public class MetaBeforeClass {
+
 	}
 	
 	@LiquibaseScript(values = {"script"})
