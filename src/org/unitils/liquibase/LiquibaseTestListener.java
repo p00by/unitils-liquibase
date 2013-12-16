@@ -46,15 +46,13 @@ public class LiquibaseTestListener extends TestListener {
 	
 	@Override
 	public void beforeTestClass(Class<?> testClass) {
-		LiquibaseScript annotation = getLiquibaseAnnotation(testClass.getAnnotations());
-		if (annotation != null) {
+		for (LiquibaseScript annotation: getLiquibaseAnnotation(testClass.getAnnotations())) {
 			runLiquibase(annotation);
 		}
 	}
 	
 	private void runLiquibase(Method testMethod) {
-		LiquibaseScript annotation = getLiquibaseAnnotation(testMethod.getAnnotations());
-		if (annotation != null) {
+		for (LiquibaseScript annotation: getLiquibaseAnnotation(testMethod.getAnnotations())) {
 			runLiquibase(annotation);
 		}
 	}
@@ -79,7 +77,7 @@ public class LiquibaseTestListener extends TestListener {
 		}
 	}
 	
-	private LiquibaseScript getLiquibaseAnnotation(Annotation[] annotations) {
+	private List<LiquibaseScript> getLiquibaseAnnotation(Annotation[] annotations) {
 		List<LiquibaseScript> liquibaseAnnotations = new ArrayList<LiquibaseScript>();
 		for (Annotation annotation: annotations) {
 			if (annotation.annotationType().equals(LiquibaseScript.class)) {
@@ -92,13 +90,7 @@ public class LiquibaseTestListener extends TestListener {
 			}
 		}
 		
-		if (liquibaseAnnotations.size() == 0) {
-			return null;
-		} else if (liquibaseAnnotations.size() == 1) {
-			return liquibaseAnnotations.get(0);
-		} else {
-			throw new RuntimeException("Multiple liquibase annotations are not supported");
-		}
+		return liquibaseAnnotations;
 		
 	}
 	
