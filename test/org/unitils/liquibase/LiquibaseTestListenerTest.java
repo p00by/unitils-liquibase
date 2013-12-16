@@ -71,9 +71,14 @@ public class LiquibaseTestListenerTest {
 		verify(liquibaseRunner).update("script");
 	}
 	
-	@Test(expected = RuntimeException.class)
-	public void testDoubleAnnotationThrows() throws Exception {
+	@Test
+	public void testDoubleAnnotationInOrder() throws Exception {
 		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("doubleAnnotation"));
+		
+		InOrder inOrder = inOrder(liquibaseRunner);
+
+		inOrder.verify(liquibaseRunner).update("script1");
+		inOrder.verify(liquibaseRunner).update("script");
 	}
 	
 	@Test
@@ -129,7 +134,7 @@ public class LiquibaseTestListenerTest {
 		@SuperLiquibaseScript
 		public void superAnnotation() {}
 		
-		@LiquibaseScript(values = {"script"}, dropBeforeScript = true)
+		@LiquibaseScript(values = {"script1"}, dropBeforeScript = true)
 		@SuperLiquibaseScript
 		public void doubleAnnotation() {}
 		
