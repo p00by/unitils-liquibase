@@ -82,6 +82,16 @@ public class LiquibaseTestListenerTest {
 	}
 	
 	@Test
+	public void testDoubleAnnotationReverseStillInOrder() throws Exception {
+		liquibaseTestListener.beforeTestMethod(new MethodClass(), MethodClass.class.getMethod("doubleAnnotationReverse"));
+		
+		InOrder inOrder = inOrder(liquibaseRunner);
+
+		inOrder.verify(liquibaseRunner).update("script1");
+		inOrder.verify(liquibaseRunner).update("script");
+	}
+	
+	@Test
 	public void testAnnotationsOnBefore() throws Exception {
 		liquibaseTestListener.beforeTestSetUp(new MethodClass(), MethodClass.class.getMethod("doubleAnnotation"));
 		
@@ -138,6 +148,10 @@ public class LiquibaseTestListenerTest {
 		@SuperLiquibaseScript
 		public void doubleAnnotation() {}
 		
+		@SuperLiquibaseScript
+		@LiquibaseScript(values = {"script1"}, dropBeforeScript = true)
+		public void doubleAnnotationReverse() {}
+		
 		@LiquibaseScript(values = {"script"}, basePath="different")
 		public void differentBasePath() {}
 		
@@ -145,7 +159,7 @@ public class LiquibaseTestListenerTest {
 	
 	public class MethodClassExtension extends MethodClass{
 		@Before
-		@LiquibaseScript(values = {"before2"})
+		@LiquibaseScript(values = {"before2"}, order = 1)
 		public void before2() {}
 	}
 	

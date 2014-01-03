@@ -11,5 +11,6 @@ public @interface LiquibaseScript {
 	String[] values();
 	boolean dropBeforeScript() default true;
 	String basePath() default "";
+	int order() default 0;
 	
 }

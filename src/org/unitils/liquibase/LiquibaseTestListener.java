@@ -3,6 +3,8 @@ package org.unitils.liquibase;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -90,8 +92,20 @@ public class LiquibaseTestListener extends TestListener {
 			}
 		}
 		
-		return liquibaseAnnotations;
+		Collections.sort(liquibaseAnnotations, new Comparator<LiquibaseScript>() {
+			@Override
+			public int compare(LiquibaseScript left, LiquibaseScript right) {
+				if (left.order() < right.order()) {
+					return -1;
+				} else if (left.order() > right.order()) {
+					return 1;
+				} else {
+					return Integer.valueOf(left.hashCode()).compareTo(Integer.valueOf(right.hashCode()));
+				}
+			}
+		});
 		
+		return liquibaseAnnotations;
 	}
 	
 }
