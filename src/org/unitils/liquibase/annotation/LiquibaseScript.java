@@ -12,5 +12,6 @@ public @interface LiquibaseScript {
 	boolean dropBeforeScript() default true;
 	String basePath() default "";
 	int order() default 0;
+	boolean cacheDatabase() default false;
 	
 }

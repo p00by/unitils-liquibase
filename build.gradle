@@ -30,6 +30,8 @@ dependencies {
 	compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6+'
 	compile group: 'org.springframework', name: 'spring-jdbc', version: '2.5.2'
 	
+	compile group: 'com.google.guava', name: 'guava', version:'10+'
+	
 	testCompile  group: 'org.mockito', name: 'mockito-all', version: '1.9+'
 }
 

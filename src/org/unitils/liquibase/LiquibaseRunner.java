@@ -1,6 +1,7 @@
 package org.unitils.liquibase;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -64,7 +65,28 @@ public class LiquibaseRunner {
 			Liquibase liquibase = new Liquibase(value, resourceAccessor, databaseConnection);
 			function.run(liquibase);
 		} finally {
-			connection.close();
+			if (connection != null) {
+				connection.close();
+			}
+		}
+	}
+	
+	public String getDatabaseProductName() {
+		Connection connection = null;
+		try { 
+			connection = dataSource.getConnection();
+			DatabaseConnection databaseConnection = new JdbcConnection(connection);
+			return databaseConnection.getDatabaseProductName();
+		} catch (Exception ex) {
+			return null;
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					//ignore
+				}
+			}
 		}
 	}
 	

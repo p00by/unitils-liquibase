@@ -77,8 +77,8 @@ public class LiquibaseTestListenerTest {
 		
 		InOrder inOrder = inOrder(liquibaseRunner);
 
-		inOrder.verify(liquibaseRunner).update("script1");
-		inOrder.verify(liquibaseRunner).update("script");
+		inOrder.verify(liquibaseRunner).update("order1");
+		inOrder.verify(liquibaseRunner).update("order2");
 	}
 	
 	@Test
@@ -87,8 +87,8 @@ public class LiquibaseTestListenerTest {
 		
 		InOrder inOrder = inOrder(liquibaseRunner);
 
-		inOrder.verify(liquibaseRunner).update("script1");
-		inOrder.verify(liquibaseRunner).update("script");
+		inOrder.verify(liquibaseRunner).update("order1");
+		inOrder.verify(liquibaseRunner).update("order2");
 	}
 	
 	@Test
@@ -144,12 +144,12 @@ public class LiquibaseTestListenerTest {
 		@SuperLiquibaseScript
 		public void superAnnotation() {}
 		
-		@LiquibaseScript(values = {"script1"}, dropBeforeScript = true)
-		@SuperLiquibaseScript
+		@LiquiOrder1
+		@LiquiOrder2
 		public void doubleAnnotation() {}
-		
-		@SuperLiquibaseScript
-		@LiquibaseScript(values = {"script1"}, dropBeforeScript = true)
+
+		@LiquiOrder2
+		@LiquiOrder1
 		public void doubleAnnotationReverse() {}
 		
 		@LiquibaseScript(values = {"script"}, basePath="different")
@@ -172,6 +172,20 @@ public class LiquibaseTestListenerTest {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Inherited
 	public @interface SuperLiquibaseScript {
+		
+	}
+	
+	@LiquibaseScript(values = {"order1"}, order = 1)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Inherited
+	public @interface LiquiOrder1 {
+		
+	}
+	
+	@LiquibaseScript(values = {"order2"}, order = 2)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Inherited
+	public @interface LiquiOrder2 {
 		
 	}
 	
