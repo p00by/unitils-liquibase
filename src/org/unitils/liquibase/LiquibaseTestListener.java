@@ -1,5 +1,8 @@
 package org.unitils.liquibase;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ import org.unitils.liquibase.cache.DatabaseDumpException;
 import org.unitils.liquibase.cache.DatabaseDumper;
 import org.unitils.liquibase.cache.DatabaseRestoreException;
 import org.unitils.liquibase.cache.DatabaseRestorer;
+import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 
 import com.google.common.base.Optional;
 
@@ -86,6 +90,11 @@ public class LiquibaseTestListener extends TestListener {
 	    		LOGGER.info("Restoring database from cache");
 	    		restoreDatabase(annotation);
         	} else {
+        		if (!"".equals(annotation.startDatabase())) {
+        			LOGGER.info("Starting with a database dump");
+        			startWithDatabase(annotation);
+        		}
+        		
 		        for (String value: annotation.values()) {
 		        	LOGGER.debug("Running liquibase script" + value);
 		        	if ("".equals(annotation.basePath())) {
@@ -105,6 +114,21 @@ public class LiquibaseTestListener extends TestListener {
 		}
 	}
 	
+	private void startWithDatabase(LiquibaseScript annotation) throws DatabaseRestoreException {
+		try {
+			if (databaseRestorer.isPresent()) {
+				String dump = IOUtils.toString(new FileInputStream(annotation.startDatabase()));
+				databaseRestorer.get().restoreDatabase(dump);
+			} else {
+				throw new DatabaseRestoreException("No database restorer present");
+			}
+		} catch (FileNotFoundException e) {
+			throw new DatabaseRestoreException(e);
+		} catch (IOException e) {
+			throw new DatabaseRestoreException(e);
+		}
+	}
+
 	private void restoreDatabase(LiquibaseScript annotation) throws DatabaseRestoreException {
 		String dump = dumps.get(annotation);
 		if (databaseRestorer.isPresent()) {

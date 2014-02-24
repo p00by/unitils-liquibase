@@ -9,6 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 public @interface LiquibaseScript {
 
 	String[] values();
+	String startDatabase() default "";
 	boolean dropBeforeScript() default true;
 	String basePath() default "";
 	int order() default 0;
