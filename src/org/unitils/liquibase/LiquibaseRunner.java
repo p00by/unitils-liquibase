@@ -5,20 +5,25 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import liquibase.Liquibase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
+import liquibase.executor.ExecutorService;
 import liquibase.resource.FileSystemResourceAccessor;
 import liquibase.resource.ResourceAccessor;
-
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 public class LiquibaseRunner {
 
 	private final DataSource dataSource;
 	private final String basePath;
-	
+
+	private static final Logger LOGGER = Logger.getLogger(LiquibaseRunner.class);
+
+
 	public LiquibaseRunner(String driver, String url, String username, String password, String basePath) {
 		dataSource = new DriverManagerDataSource(driver, url, username, password);
 		this.basePath = basePath;
@@ -57,16 +62,22 @@ public class LiquibaseRunner {
 	
 	private void runInLiquibase(String value, LiquibaseFunction function, String basePath) throws Exception {
 		Connection connection = null;
+		Liquibase liquibase = null;
 		try { 
 			connection = dataSource.getConnection();
 			DatabaseConnection databaseConnection = new JdbcConnection(connection);
 			ResourceAccessor resourceAccessor = new FileSystemResourceAccessor(basePath);
 			
-			Liquibase liquibase = new Liquibase(value, resourceAccessor, databaseConnection);
+			liquibase = new Liquibase(value, resourceAccessor, databaseConnection);
 			function.run(liquibase);
+
 		} finally {
+			LOGGER.info("Closing liquibase stuff");
 			if (connection != null) {
 				connection.close();
+			}
+			if (liquibase != null) {
+				ExecutorService.getInstance().clearExecutor(liquibase.getDatabase());
 			}
 		}
 	}
@@ -78,13 +89,14 @@ public class LiquibaseRunner {
 			DatabaseConnection databaseConnection = new JdbcConnection(connection);
 			return databaseConnection.getDatabaseProductName();
 		} catch (Exception ex) {
+			LOGGER.error("Could not determine database product name", ex);
 			return null;
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					//ignore
+					LOGGER.error("Could not close connection", e);
 				}
 			}
 		}

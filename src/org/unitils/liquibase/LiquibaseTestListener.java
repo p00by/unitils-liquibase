@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.junit.Before;
+import org.junit.*;
 import org.unitils.core.TestListener;
 import org.unitils.core.UnitilsException;
 import org.unitils.liquibase.annotation.LiquibaseScript;
@@ -111,7 +110,7 @@ public class LiquibaseTestListener extends TestListener {
 		} catch (Exception ex) {
 			LOGGER.error("Could not run liquibase command", ex);
 			throw new UnitilsException(ex);
-		}
+		} 
 	}
 	
 	private void startWithDatabase(LiquibaseScript annotation) throws DatabaseRestoreException {
