@@ -21,7 +21,8 @@ public class MysqlDatabaseRestorer implements DatabaseRestorer {
 		try { 
 			ProcessBuilder pb = new ProcessBuilder(
 				Arrays.asList(mysqlPath, "-u", user, "-p" + password, schema));
-	    	Process p = pb.start();
+	    	pb.redirectErrorStream(true);
+			Process p = pb.start();
 	    	p.getOutputStream().write(dump.getBytes());
 	    	p.getOutputStream().close();
 	    	p.waitFor();
