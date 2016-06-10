@@ -34,9 +34,3 @@ dependencies {
 	
 	testCompile  group: 'org.mockito', name: 'mockito-all', version: '1.9+'
 }
-
-task pom << {
-    pom {
-
-    }.writeTo("$buildDir/pom.xml")
-}
